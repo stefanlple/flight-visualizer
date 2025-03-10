@@ -6,6 +6,7 @@ import { latLonToCart } from "../utility/latLngToCartSystem";
 //Access by OpenSky Network
 /* import { password, username } from "../../info"; */
 
+import { openskyUrl } from "../config/api.js";
 import Airport from "./Airport";
 
 export default class Airports extends THREE.Group {
@@ -13,8 +14,9 @@ export default class Airports extends THREE.Group {
         super();
         this.name = "airports";
         this.airports = airportsData;
-        this.fetchURL =
-            "https://opensky-network.org/api/airports/region?lamin=-90&lamax=90&lomin=-180&lomax=180&type=large_airport";
+        this.fetchURL = openskyUrl(
+            "/airports/region?lamin=-90&lamax=90&lomin=-180&lomax=180&type=large_airport",
+        );
         this.renderAirports();
         // this.fetchAirports();
     }

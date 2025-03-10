@@ -10,6 +10,7 @@ import { removeObject3D } from "../utility/removeObject3D";
 //Access by OpenSky Network
 /* import { password, username } from "../../info"; */
 
+import { openskyUrl } from "../config/api.js";
 import { closeAircraftInfo, closeAirportInfo } from "../features/infoBoxs";
 import { latLonToCart } from "../utility/latLngToCartSystem";
 import { removeTrack } from "../utility/removeTrack";
@@ -47,10 +48,10 @@ function animationToAirport(airport) {
                 position: calculateLinearPosition(
                     new THREE.Vector3(0, 0, 0),
                     airport.position,
-                    20
+                    20,
                 ),
             },
-            1300
+            1300,
         )
         .easing(TWEEN.Easing.Sinusoidal.Out)
         .onStart(() => {
@@ -80,10 +81,10 @@ async function animationToAircraft(aircraft, positionData) {
                 position: calculateLinearPosition(
                     new THREE.Vector3(0, 0, 0),
                     aircraft.position,
-                    20
+                    20,
                 ),
             },
-            1300
+            1300,
         )
         .easing(TWEEN.Easing.Sinusoidal.Out)
         .onStart(() => {
@@ -104,20 +105,21 @@ async function animationToAircraft(aircraft, positionData) {
 }
 
 async function fetchAircraftOnIcao(icao24) {
-    /*  const credentials = `${username}:${password}`;
-  const encoder = new TextEncoder();
-  const data = encoder.encode(credentials);
-  const encodedCredentials = BASE64.fromByteArray(data); */
+    try {
+        const response = await fetch(
+            openskyUrl(`/states/all?icao24=${icao24}`),
+        );
+        const jsonData = await response.json();
 
-    const url = "https://opensky-network.org/api/states/all?icao24=";
-    const response = await fetch(url + icao24, {
-        /*  headers: {
-      Authorization: `Basic ${encodedCredentials}`,
-    }, */
-    });
-    const jsonData = await response.json();
-    console.log("aircraft fetched", jsonData.states[0]);
-    displayData(jsonData.states[0]);
+        if (jsonData.states && jsonData.states.length > 0) {
+            console.log("aircraft fetched", jsonData.states[0]);
+            displayData(jsonData.states[0]);
+        } else {
+            console.log("No aircraft data found for ICAO:", icao24);
+        }
+    } catch (error) {
+        console.error("Error fetching aircraft:", error);
+    }
 }
 
 const globeRadius = 102;
@@ -129,12 +131,9 @@ export async function fetchTrackOnIcao(icao24) {
     const data = encoder.encode(credentials);
     const encodedCredentials = BASE64.fromByteArray(data); */
 
-        const url = `https://opensky-network.org/api/tracks/all?icao24=${icao24}&time=0`;
-        const response = await fetch(url, {
-            /* headers: {
-        Authorization: `Basic ${encodedCredentials}`,
-      }, */
-        });
+        const response = await fetch(
+            openskyUrl(`/tracks/all?icao24=${icao24}&time=0`),
+        );
         const jsonData = await response.json();
         return jsonData;
     } catch (error) {
@@ -161,7 +160,7 @@ async function drawTrackOnIcao(icao24, positionData) {
             latitude,
             longitude,
             altitude,
-            globeRadius
+            globeRadius,
         );
         pathPoints.push(new THREE.Vector3(x, y, z));
 
@@ -170,7 +169,7 @@ async function drawTrackOnIcao(icao24, positionData) {
             new THREE.LineBasicMaterial({
                 color: 0x00ff00,
                 linewidth: 5,
-            })
+            }),
         );
         track.name = "track";
         window.scene.add(track);
@@ -211,7 +210,7 @@ function drawGraphAndPlane(dataPoints, track) {
             "viewBox",
             `0 0 ${width + margin.left + margin.right} ${
                 height + margin.top + margin.bottom
-            }`
+            }`,
         )
         .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
@@ -281,7 +280,7 @@ function drawGraphAndPlane(dataPoints, track) {
                 .html(
                     `Time: ${d.time.getHours()}:${d.time.getMinutes()}, Altitude: ${
                         d.altitude
-                    }`
+                    }`,
                 )
                 .style("left", `${event.pageX}px`)
                 .style("top", `${event.pageY}px`);
@@ -290,7 +289,7 @@ function drawGraphAndPlane(dataPoints, track) {
                 d.position.latitude,
                 d.position.longitude,
                 d.altitude,
-                102.1
+                102.1,
             );
             if (track.children.length === 0) {
                 const aircraft = new Aircraft();
@@ -301,7 +300,7 @@ function drawGraphAndPlane(dataPoints, track) {
                 aircraft.position.set(x, y, z);
                 aircraft.lookAt(0, 0, 0);
                 aircraft.rotateZ(
-                    THREE.MathUtils.degToRad(d.position.trueTrack)
+                    THREE.MathUtils.degToRad(d.position.trueTrack),
                 );
                 track.add(aircraft);
             }

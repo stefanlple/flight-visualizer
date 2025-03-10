@@ -10,7 +10,7 @@ import Globe from "./objects/Globe";
 import Enviroment from "./enviroment/Enviroment";
 import Sun from "./objects/Sun";
 import Planes from "./objects/Planes";
-import { RealtimeState, HistoricalState } from "./objects/Planes";
+import { RealtimeState, HistoricalState } from "./objects/Planes"; // HistoricalState: deprecated
 import Airports from "./objects/Airports";
 
 //Utilities
@@ -66,12 +66,7 @@ function mainRealTime() {
 
   orbitControls.update();
 
-  const planeStateHistorical = new HistoricalState();
-  const planeStateRealtime = new RealtimeState();
-  const planeState =
-    window.state === "historical" ? planeStateHistorical : planeStateRealtime;
-
-  const planes = new Planes(planeState);
+  const planes = new Planes(new RealtimeState());
   window.scene.add(planes);
 
   const sun = new Sun();
@@ -182,6 +177,7 @@ function mainRealTime() {
   mainLoop();
 }
 
+/** @deprecated Historical mode + MongoDB — kept for reference only */
 function mainHistorical() {
   initializeScene();
 
@@ -406,36 +402,25 @@ function initializeScene() {
   window.scene.add(ball); */
 }
 
+window.onresize = updateAspectRatio;
+window.addEventListener("mousemove", calculateMousePosition);
+
 document.querySelectorAll("#startButton").forEach((e) => {
   if (e.classList.contains("realtime")) {
-    e.addEventListener("click", function (event) {
+    e.addEventListener("click", function () {
       window.state = "realtime";
       mainRealTime();
-      document.querySelectorAll("#startButton").forEach((e) => {
-        e.remove();
-      });
+      document.querySelectorAll("#startButton").forEach((btn) => btn.remove());
 
       window.addEventListener("mousemove", executeRaycastOnMove);
       window.onclick = executeRaycastOnClick;
-      const clusterGroupElements = document.querySelector("#cluster-group");
-      const filterElements = document.querySelector(".filter");
-      clusterGroupElements.style.visibility = "visible";
-      filterElements.style.visibility = "visible";
-
-      const legend = document.querySelector("#help");
-      legend.style.visibility = "visible";
-    });
-  } else {
-    e.addEventListener("click", function (event) {
-      window.state = "historical";
-      mainHistorical();
-      document.querySelectorAll("#startButton").forEach((e) => {
-        e.remove();
-      });
+      document.querySelector("#cluster-group").style.visibility = "visible";
+      document.querySelector(".filter").style.visibility = "visible";
+      document.querySelector("#help").style.visibility = "visible";
     });
   }
-  window.onresize = updateAspectRatio;
-  window.addEventListener("mousemove", calculateMousePosition);
+  // DEPRECATED: historical mode (MongoDB + date picker flow)
+  // else { e.addEventListener("click", () => { window.state = "historical"; mainHistorical(); ... }); }
 });
 /* window.onload = mainRealTime;
 window.onresize = updateAspectRatio;

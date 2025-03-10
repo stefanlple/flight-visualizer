@@ -13,6 +13,7 @@ import { removeTrack } from "../utility/removeTrack";
 //Access by OpenSky Network
 /* import { username, password } from "../../info"; */
 
+import { openskyUrl } from "../config/api.js";
 import Aircraft from "./Aircraft";
 
 export default class Planes extends THREE.Group {
@@ -92,7 +93,7 @@ export default class Planes extends THREE.Group {
             //only for dev
             function findElementsNotInArray(arr1, arr2) {
                 const elementsNotInArr1 = arr2.filter(
-                    (element) => !arr1.includes(element)
+                    (element) => !arr1.includes(element),
                 );
                 //console.log("PLEASE ADD THIS TO COUNTRIES MAP", elementsNotInArr1);
             }
@@ -102,11 +103,11 @@ export default class Planes extends THREE.Group {
                     const continents = Object.values(this.continentsMap);
                     const mergedArray = continents.reduce(
                         (acc, countries) => [...acc, ...countries],
-                        []
+                        [],
                     );
                     return mergedArray;
                 })(),
-                Array.from(this.countrySet)
+                Array.from(this.countrySet),
             );
         })(this);
     }
@@ -156,10 +157,10 @@ export default class Planes extends THREE.Group {
                                 this.defaultFilterParameters[classname].max;
                         } else {
                             this.filterParameters[classname].min = Math.round(
-                                Number(e.querySelector("#min").value)
+                                Number(e.querySelector("#min").value),
                             );
                             this.filterParameters[classname].max = Math.round(
-                                Number(e.querySelector("#max").value)
+                                Number(e.querySelector("#max").value),
                             );
                         }
                         break;
@@ -228,7 +229,7 @@ export default class Planes extends THREE.Group {
                         checkNotBetween(
                             plane[this.filterIndexMap[key]],
                             filterParameters[key].min,
-                            filterParameters[key].max
+                            filterParameters[key].max,
                         )
                     ) {
                         filter = false;
@@ -363,6 +364,7 @@ class State {
     constructor() {}
 }
 
+/** @deprecated Historical mode + MongoDB backend — not used for live deployment */
 export class HistoricalState extends State {
     constructor() {
         super();
@@ -441,13 +443,13 @@ export class HistoricalState extends State {
 
             let lat2 = Math.asin(
                 Math.sin(lat1) * Math.cos(distance) +
-                    Math.cos(lat1) * Math.sin(distance) * Math.cos(bearing)
+                    Math.cos(lat1) * Math.sin(distance) * Math.cos(bearing),
             );
             let lon2 =
                 lon1 +
                 Math.atan2(
                     Math.sin(bearing) * Math.sin(distance) * Math.cos(lat1),
-                    Math.cos(distance) - Math.sin(lat1) * Math.sin(lat2)
+                    Math.cos(distance) - Math.sin(lat1) * Math.sin(lat2),
                 );
             lon2 = ((lon2 + 3 * Math.PI) % (2 * Math.PI)) - Math.PI; // normalize to -180 - + 180 degrees
 
@@ -503,7 +505,10 @@ export class HistoricalState extends State {
                         latitude: plane.latitude_1,
                         longitude: plane.longitude_1,
                     },
-                    { latitude: plane.latitude_2, longitude: plane.longitude_2 }
+                    {
+                        latitude: plane.latitude_2,
+                        longitude: plane.longitude_2,
+                    },
                 );
 
                 const intermediaryLocation = calculateDestinationLocation(
@@ -517,19 +522,19 @@ export class HistoricalState extends State {
                         {
                             latitude: plane.latitude_2,
                             longitude: plane.longitude_2,
-                        }
-                    ) * i
+                        },
+                    ) * i,
                 );
 
                 const aircraft = new THREE.Mesh(
                     new THREE.SphereGeometry(0.8),
-                    new THREE.MeshBasicMaterial({ color: 0xff0000 })
+                    new THREE.MeshBasicMaterial({ color: 0xff0000 }),
                 );
                 const [aircraftx1, aircrafty1, aircraftz1] = latLonToCart(
                     intermediaryLocation.latitude,
                     intermediaryLocation.longitude,
                     0,
-                    globeRadius
+                    globeRadius,
                 );
                 aircraft.translateX(aircraftx1);
                 aircraft.translateY(aircrafty1);
@@ -551,7 +556,7 @@ export class HistoricalState extends State {
             {
                 latitude: this.planeObjects[0].latitude_2,
                 longitude: this.planeObjects[0].longitude_2,
-            }
+            },
         );
 
         const intermediaryLocation = calculateDestinationLocation(
@@ -568,24 +573,24 @@ export class HistoricalState extends State {
                 {
                     latitude: this.planeObjects[0].latitude_2,
                     longitude: this.planeObjects[0].longitude_2,
-                }
+                },
             ) *
                 calculateDateFraction(
                     new Date(this.planeObjects[0].firstseen),
                     new Date(this.planeObjects[0].lastseen),
-                    testDate
-                )
+                    testDate,
+                ),
         );
 
         const aircraft = new THREE.Mesh(
             new THREE.SphereGeometry(2),
-            new THREE.MeshBasicMaterial({ color: 0xff0000 })
+            new THREE.MeshBasicMaterial({ color: 0xff0000 }),
         );
         const [aircraftx1, aircrafty1, aircraftz1] = latLonToCart(
             intermediaryLocation.latitude,
             intermediaryLocation.longitude,
             0,
-            globeRadius
+            globeRadius,
         );
         aircraft.translateX(aircraftx1);
         aircraft.translateY(aircrafty1);
@@ -629,11 +634,13 @@ export class RealtimeState extends State {
       const encoder = new TextEncoder();
       const data = encoder.encode(credentials);
       const encodedCredentials = base64.fromByteArray(data); */
-            const response = await fetch(this.fetchURL, {
-                /*    headers: {
+            // const response = await fetch(this.fetchURL, {
+            /*    headers: {
           Authorization: `Basic ${encodedCredentials}`,
         }, */
-            });
+            // });
+
+            const response = await fetch(openskyUrl("/states/all"));
 
             const jsonData = await response.json();
             this.planeObjects = jsonData.states;
@@ -690,18 +697,18 @@ export class RealtimeState extends State {
                         aircraft.material.color = new THREE.Color(
                             this.continentsColorMap[
                                 this.findContinent(plane[2])
-                            ]
+                            ],
                         );
                         aircraft.material.emissive = new THREE.Color(
                             this.continentsColorMap[
                                 this.findContinent(plane[2])
-                            ]
+                            ],
                         );
                     } else {
                         if (plane[2] === clusterText) {
                             aircraft.material.color = new THREE.Color(0x00ff00);
                             aircraft.material.emissive = new THREE.Color(
-                                0x00ff00
+                                0x00ff00,
                             );
                         }
                     }
