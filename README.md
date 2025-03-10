@@ -12,17 +12,6 @@ Immersive 3D Visualization of Real-time and Historical Flight Traffic Data sourc
 
 If your backend uses another port (e.g. `PORT=3000` in `backend/.env`), create `.env` in the project root with `VITE_BACKEND_URL=http://localhost:3000`.
 
-Optional: `backend/.env` — set `OPENSKY_USERNAME` / `OPENSKY_PASSWORD` for higher rate limits.
-
-## Deploy
-
-```bash
-npm run build
-npm start
-```
-
-Serves the built app and `/api/opensky/*` on one port. Set `PORT` as required by your host.
-
 > Historical mode and MongoDB (`/api/flight`) are deprecated and disabled in `backend/server.js`.
 
 ## Manual - Realtime Visualisation
